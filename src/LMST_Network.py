@@ -1,8 +1,7 @@
-import numpy as np
-import tensorflow as tf
+
 import tensorflow.contrib.slim as slim
-from helper import *
-from Utils import *
+from src.helper import *
+from src.Utils import *
 #from vizdoom import *
 
 
@@ -33,7 +32,6 @@ class LMST_Network():
             lstm_c, lstm_h = lstm_state
             self.state_out = (lstm_c[:1, :], lstm_h[:1, :])
             rnn_out = tf.reshape(lstm_outputs, [-1, 256])
-            
             #Output layers for policy and value estimations
             self.policy = slim.fully_connected(rnn_out,a_size,
                 activation_fn=tf.nn.softmax,
@@ -68,4 +66,3 @@ class LMST_Network():
                 #Apply local gradients to global network
                 global_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, 'global')
                 self.apply_grads = trainer.apply_gradients(zip(grads,global_vars))
-    

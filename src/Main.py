@@ -1,16 +1,14 @@
-from ChessPuzzle import *
-import LMST_Network as net
-from Worker import *
-from helper import *
 import multiprocessing
-from parameters import *
-import tensorflow as tf
+import os
 import threading
 from time import sleep
-import os
 
+import tensorflow as tf
 
-
+from src.ChessPuzzle import ChessPuzzle
+from src.LMST_Network import LMST_Network
+from src.Worker import Worker
+from src.parameters import *
 
 tf.reset_default_graph()
 
@@ -20,7 +18,7 @@ if not os.path.exists(model_path):
 with tf.device("/cpu:0"): 
     global_episodes = tf.Variable(0,dtype=tf.int32,name='global_episodes',trainable=False)
     trainer = tf.train.AdamOptimizer(learning_rate=1e-4)
-    master_network = net.LMST_Network(s_size,a_size,'global',None) # Generate global network
+    master_network = LMST_Network(s_size,a_size,'global',None) # Generate global network
     num_workers = multiprocessing.cpu_count() # Set workers ot number of available CPU threads
     workers = []
     
@@ -32,7 +30,7 @@ with tf.Session() as sess:
         workers.append(Worker(ChessPuzzle(chess_size),i,s_size,a_size,trainer,model_path,global_episodes,sess))
         
     coord = tf.train.Coordinator()
-    if load_model == True:
+    if load_model:
         print ('Loading Model...')
         ckpt = tf.train.get_checkpoint_state(model_path)
         saver.restore(sess,ckpt.model_checkpoint_path)
