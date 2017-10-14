@@ -1,3 +1,5 @@
+import datetime
+
 import numpy as np
 import tensorflow as tf
 import scipy.signal
@@ -33,3 +35,19 @@ def normalized_columns_initializer(std=1.0):
         out *= std / np.sqrt(np.square(out).sum(axis=0, keepdims=True))
         return tf.constant(out)
     return _initializer
+
+def now(dateformat='%Y%m%d'):
+    return datetime.datetime.today().strftime(dateformat)
+
+def variable_summaries(writer,summary):
+    with tf.name_scope('summaries'):
+        mean = tf.reduce_mean(summary)
+        tf.summary.scalar('mean', summary)
+        with tf.name_scope('stddev'):
+            stddev = tf.sqrt(tf.reduce_mean(tf.square(summary - mean)))
+        tf.summary.scalar('stddev', stddev)
+        tf.summary.scalar('max', tf.reduce_max(summary))
+        tf.summary.scalar('min', tf.reduce_min(summary))
+        tf.summary.histogram('histogram', summary)
+        merged = tf.summary.merge_all()
+        writer.add_summary(merged)

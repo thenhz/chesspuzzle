@@ -1,24 +1,28 @@
-import multiprocessing
-import os
+import os, shutil
 import threading
 from time import sleep
 
 import tensorflow as tf
-
-from src.ChessPuzzle import ChessPuzzle
-from src.LMST_Network import LMST_Network
-from src.Worker import Worker
+import multiprocessing
+from src.NNHz1.ChessPuzzle import ChessPuzzle
+from src.NNHz1.NNHz1 import NNHz1
+from src.NNHz1.Worker import Worker
 from src.parameters import *
 
 tf.reset_default_graph()
 
+
+if os.path.exists(app_path):
+    shutil.rmtree(app_path)
 if not os.path.exists(model_path):
     os.makedirs(model_path)
+if not os.path.exists(img_path):
+    os.makedirs(img_path)
 
 with tf.device("/cpu:0"): 
     global_episodes = tf.Variable(0,dtype=tf.int32,name='global_episodes',trainable=False)
     trainer = tf.train.AdamOptimizer(learning_rate=1e-4)
-    master_network = LMST_Network(s_size,a_size,'global',None) # Generate global network
+    master_network = NNHz1(s_size,a_size,'global',None) # Generate global network
     num_workers = multiprocessing.cpu_count() # Set workers ot number of available CPU threads
     workers = []
     
@@ -42,7 +46,7 @@ with tf.Session() as sess:
     worker_threads = []
     for worker in workers:
         worker_work = lambda: worker.work(max_episode_length,gamma,sess,coord,saver)
-        t = threading.Thread(target=(worker_work))
+        t = threading.Thread(target=worker_work)
         t.start()
         sleep(0.5)
         worker_threads.append(t)

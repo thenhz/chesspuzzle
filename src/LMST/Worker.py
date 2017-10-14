@@ -1,7 +1,7 @@
-from src.LMST_Network import LMST_Network
+#from src.LMST_Network import LMST_Network
+from src.NNHz1 import NNHz1
 from src.parameters import *
 from src.Utils import *
-
 
 
 class Worker():
@@ -18,7 +18,7 @@ class Worker():
         self.summary_writer = tf.summary.FileWriter(app_path + "/train_" + str(self.number), sess.graph)
 
         # Create the local copy of the network and the tensorflow op to copy global paramters to local network
-        self.local_AC = LMST_Network(s_size, a_size, self.name, trainer)
+        self.local_AC = NNHz1(s_size, a_size, self.name, trainer)
         self.update_local_ops = update_target_graph('global', self.name)
 
         # !!
