@@ -8,7 +8,7 @@ class NNHz1:
 
     lr = 1e-2
 
-    def __init__(self,s_size,a_size,scope,trainer):
+    def __init__(self,s_size,a_size,scope,trainer,writer):
         with tf.variable_scope(scope):
 
 
@@ -36,9 +36,13 @@ class NNHz1:
                 local_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope)
                 self.gradients = tf.gradients(self.loss,local_vars)
                 self.var_norms = tf.global_norm(local_vars)
+                #for w in local_vars:
+                #    variable_summaries(writer, w)
                 grads,self.grad_norms = tf.clip_by_global_norm(self.gradients,40.0)
 
 
                 #Apply local gradients to global network
                 global_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, 'global')
+
                 self.apply_grads = trainer.apply_gradients(zip(grads,global_vars))
+

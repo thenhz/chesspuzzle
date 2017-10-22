@@ -51,3 +51,20 @@ def variable_summaries(writer,summary):
         tf.summary.histogram('histogram', summary)
         merged = tf.summary.merge_all()
         writer.add_summary(merged)
+
+def variable_summaries2(summary,var):
+    with tf.name_scope('summaries'):
+        mean = np.mean(var);
+        max = np.max(var)
+        min = np.min(var)
+        with tf.name_scope('stddev'):
+            stddev = np.sqrt(np.mean(np.square(var - mean)))
+
+        summary.value.add(tag='mean', simple_value=float(mean))
+        summary.value.add(tag='stddev', simple_value=float(stddev))
+        summary.value.add(tag='max', simple_value=max)
+        summary.value.add(tag='min', simple_value=min)
+
+        #tf.summary.histogram('histogram', summary)
+        #merged = tf.summary.merge_all()
+        #writer.add_summary(merged)

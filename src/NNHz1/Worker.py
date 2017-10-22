@@ -20,7 +20,7 @@ class Worker():
         self.summary_writer = tf.summary.FileWriter(tensorboard_path + "/train_" + str(self.number), sess.graph)
 
         # Create the local copy of the network and the tensorflow op to copy global paramters to local network
-        self.local_AC = NNHz1(s_size, a_size, self.name, trainer)
+        self.local_AC = NNHz1(s_size, a_size, self.name, trainer,self.summary_writer)
         self.update_local_ops = update_target_graph('global', self.name)
 
         # !!
@@ -103,11 +103,6 @@ class Worker():
                     # Convert PNG buffer to TF image
                     image = tf.image.decode_png(self.env.render().getvalue(), channels=4)
                     # Add the batch dimension
-                    image = tf.expand_dims(image, 0)
-                    summary_op = tf.summary.image("now('%Y%m%d%H%M%S%f')", image)
-                    # Run
-                    summary = sess.run(summary_op)
-                    self.summary_writer.add_summary(summary)
                     self.summary_writer.flush()
 
                 self.episode_rewards.append(episode_reward)
@@ -127,18 +122,20 @@ class Worker():
                     mean_reward = np.mean(self.episode_rewards[-5:])
                     mean_length = np.mean(self.episode_lengths[-5:])
                     mean_queens = np.mean(self.episode_queens_num[-5:])
-                    summary = tf.Summary()
-                    weights = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, self.name)
 
-                    summary = sess.run([weights])
-                    for w in summary:
-                        variable_summaries(self.summary_writer,w)
+                    summary = tf.Summary()
+
+                    weights = sess.run([tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, self.name)])
+                    for w in weights[0]:
+                        variable_summaries2(summary,w)
+
 
                     summary.value.add(tag='Perf/Reward', simple_value=float(mean_reward))
                     summary.value.add(tag='Perf/Length', simple_value=float(mean_length))
                     summary.value.add(tag='Perf/NumQueens', simple_value=float(mean_queens))
                     summary.value.add(tag='Losses/Grad Norm', simple_value=float(g_n))
                     summary.value.add(tag='Losses/Var Norm', simple_value=float(v_n))
+
 
                     self.summary_writer.add_summary(summary, episode_count)
 
